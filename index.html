@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>EDM Application</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/css/bootstrap-datepicker.min.css">
+	<!-- <link rel="stylesheet" type="text/css" href="assets/css/style.css"> -->
+	
+	<style>
+		#header {
+			background-color: #000;
+			color: #FFF;
+			text-align: center;
+			border-top-right-radius: 0;
+			border-top-left-radius: 0;
+		}
+		.panel-primary .content-header {
+			color: #FFF;
+		}
+		.input-group {
+			margin-bottom: 15px;
+		}	
+		.table>thead>tr>th {
+			text-transform: capitalize;
+		}
+		.table>tbody tr:first-of-type td {
+			border-top: none;
+		}
+		.table>tbody tr:nth-child(even) {
+			background-color: #eee;
+		}
+		input[type=number]::-webkit-inner-spin-button, 
+		input[type=number]::-webkit-outer-spin-button { 
+		  -webkit-appearance: none; 
+		  margin: 0; 
+		}	
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="jumbotron" id="header">
+			<h1>Train Time!</h1>
+		</div>
+		<div class="panel panel-primary " id="train-data">
+	  		<div class="panel-heading content-header">
+	    		<h3 class="panel-title">Real Time Train Schedule</h3>
+	  		</div>
+	 		<div class="panel-body">
+	   		
+	   			<table class="table">
+					<thead>
+						<tr>
+						<th>Train Name</th>
+						<th>Destination</th>
+						<th>Frequency (min)</th>
+						<th>Next Arrival</th>
+						<th>Minutes Away</th>
+						</tr>
+					</thead>
+					<tbody id="table-body">
+					<!-- add employees -->
+					</tbody>
+				</table>
+	  		</div>
+		</div>
+		<div class="panel panel-primary" id="add-new-employee">
+	  		<div class="panel-heading content-header">
+	    		<h3 class="panel-title">Add Train</h3>
+	  		</div>
+	 		<div class="panel-body">
+	   			<form id="train-form">
+
+
+<!-- Input Train Name -->
+
+				    <div class="form-group">
+				      <label for="name">Train Name</label>
+				      <input type="text" class="form-control" id="train-name" name="name" required>
+				    </div>
+
+<!-- Input Destination -->
+
+				    <div class="form-group">
+				      <label for="destination">Destination</label>
+				      <input type="text" class="form-control" id="train-destination" name="destination" required>
+				    </div>
+
+<!-- Input First Train Time -->
+
+					<div class="input-group clockpicker">
+						<label for="first">First Train Time (Military Time: HH:mm)</label>
+					    <input type="text" class="form-control" id="train-first" name="first" required>
+
+					</div>
+
+<!-- Input Destination -->
+
+				    <div class="form-group">
+				      <label for="role">Frequency (minutes)</label>
+				      <input type="text" class="form-control" id="train-frequency" name="role" required>
+				    </div>
+
+<!-- Submit Button -->
+
+
+    				<button type="submit" class="btn btn-primary" id="train-schedule-submit">Submit</button>
+	   			 	
+	   			</form>
+	   		</div>
+	  	</div>
+	</div>
+	<!-- JQUERY -->
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+
+	<!-- Bootstrap -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+	<!-- Bootstap datepicker calendar -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/js/bootstrap-datepicker.min.js" crossorigin="anonymous"></script>
+
+	<!-- Firebase -->
+	<script src="https://www.gstatic.com/firebasejs/4.5.0/firebase.js"></script>
+
+	<!-- MOMENTS LIBRARY -->
+	<script src="https://cdn.jsdelivr.net/momentjs/2.12.0/moment.min.js"></script>
+	
+	<script src = "logic.js"></script>
+
+
+	<!-- <script>
+
+
+
+
+// Firebase Key 
+	  var config = {
+	    apiKey: "AIzaSyDe9M5ZEuiFezeRc-b5H4XsfaXRss_uTQI",
+	    authDomain: "employee-tracker-67328.firebaseapp.com",
+	    databaseURL: "https://employee-tracker-67328.firebaseio.com",
+	    projectId: "employee-tracker-67328",
+	    storageBucket: "employee-tracker-67328.appspot.com",
+	    messagingSenderId: "177719825996"
+	  };
+	  // Initialize firebase
+	  firebase.initializeApp(config);
+
+	  var database = firebase.database();
+
+	  var ref = database.ref();
+
+
+// On click function for submit button: 
+	$("#train-schedule-submit").on("click", function(e) {
+		// form validation without refresh
+		var inpObj = $("#train-form");
+	    if (inpObj[0].checkValidity() === false) {
+	      return
+	    } else {
+	      e.preventDefault() 
+	    }
+
+// TAKE IN USER INPUTS
+	    var first = $("#train-first").val().trim();
+	    var name  = $("#train-name").val().trim();
+	    var destination = $("#train-destination").val().trim();
+	    var frequency = parseInt($("#train-frequency").val().trim());
+
+
+// Calculated variables
+	
+	    var currentTime = moment();
+	    var tC = first.split(":");
+	    var timeConvert = moment().hours(tC[0]).minutes(tC[1]).second(00);
+	  	var difference = (moment().diff(moment(timeConvert), "minutes"));
+	  	console.log(difference);
+
+
+// Calculate time until next train
+	  	 while (difference > 0) {
+	  	 	timeConvert = moment(timeConvert).add(frequency, "minutes");
+
+	  	 	console.log(timeConvert);
+
+	  	 	difference = moment().diff(moment(timeConvert), "minutes");
+
+	  	 	console.log(difference);
+
+			Math.abs(difference) 
+
+			var finalDifference = Math.abs(difference)
+
+			console.log(finalDifference);
+	  	 }
+
+var nextTrain = moment(timeConvert).format("hh:mm");
+
+
+
+// TEST / CHECK MY VARIABLES
+		console.log(name),
+		console.log(destination);
+		console.log(frequency);
+		console.log(nextTrain);
+		console.log(finalDifference);
+
+
+
+//PUSH VARIABLES TO DATABESE
+
+
+	  		ref.push({
+	  			dBName:name,
+	  			dBDestination:destination,
+	  			dBFrequency:frequency,
+	  			dBNextArrival:nextTrain,
+				dBMinutesAway:finalDifference
+	  		})
+	    // console.log(employee);
+	    // later check if employee already added 
+	    $("form").trigger("reset"); // clear form
+	    return false; // prevent page refresh
+	});
+
+
+database.ref().on("child_added", function(snapshot) {
+	var postData = $("<tr>")
+	var postName = $("<td id='name'>");
+	var postDestination = $("<td id='destination'>");
+	var postFrequency = $("<td id='frequency'>");
+	var postArrival = $("<td> id='arrival'");
+	var postNext = $("<td id='next'>");
+
+
+	postName.text(snapshot.val().dBName);
+	postDestination.text(snapshot.val().dBDestination);
+	postFrequency.text(snapshot.val().dBFrequency);
+	postArrival.text(snapshot.val().dBNextArrival);
+	postNext.text(snapshot.val().dBMinutesAway);
+
+	$("#table-body").append(postData, postName, postDestination, postFrequency, postArrival, postNext);
+	console.log("#table-body");
+
+
+})
+
+
+
+
+
+
+
+	</script> -->
+</body>
+</html>
